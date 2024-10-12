@@ -1,0 +1,13 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ../:/app
+    tty: true
+    image: input-attendance-chrome-extension
+    container_name: input-attendance-chrome-extension-container
+    environment:
+      TZ: 'Asia/Tokyo'
+    network_mode: 'host'
