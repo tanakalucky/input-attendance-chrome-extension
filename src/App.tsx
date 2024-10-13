@@ -137,6 +137,19 @@ const inputAttendance = (start: string, end: string, rest: string): void => {
       ).singleNodeValue;
     };
 
+    const getIsShiftDay = (index: number): boolean => {
+      const shiftText = getElementByXPath(
+        `/html/body/div/div/div[2]/main/div/div/div/div[2]/form/div[2]/div/table/tbody/tr[${index}]/td[4]/div[2]`
+      );
+
+      if (!shiftText || !(shiftText instanceof HTMLDivElement)) {
+        console.warn('シフト情報の取得に失敗しました');
+        return false;
+      }
+
+      return shiftText.innerText !== '';
+    };
+
     const yearSelect = getElementByXPath(
       '/html/body/div/div/div[2]/main/div/div/div/h5/div/form/div/div[2]/select[1]'
     );
@@ -159,23 +172,21 @@ const inputAttendance = (start: string, end: string, rest: string): void => {
     );
 
     for (let day = 1; day <= days; day++) {
-      const dayOfWeek = new Date(year, month - 1, day).getDay();
-      if (dayOfWeek === 0 || dayOfWeek === 6) continue;
-
       const index = (day - 1) * 3;
 
+      const isShiftDay = getIsShiftDay(day);
       const startInput = inputs[index];
       const endInput = inputs[index + 1];
       const restInput = inputs[index + 2];
 
       if (startInput && startInput instanceof HTMLInputElement) {
-        startInput.value = start;
+        startInput.value = isShiftDay ? start : '';
       }
       if (endInput && endInput instanceof HTMLInputElement) {
-        endInput.value = end;
+        endInput.value = isShiftDay ? end : '';
       }
       if (restInput && restInput instanceof HTMLInputElement) {
-        restInput.value = rest;
+        restInput.value = isShiftDay ? rest : '';
       }
     }
 
