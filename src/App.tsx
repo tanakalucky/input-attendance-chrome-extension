@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useLayoutEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 import { Button } from './components/ui/button';
@@ -11,6 +12,18 @@ import {
 } from './components/ui/form';
 import { Input } from './components/ui/input';
 
+const STORAGE_KEY = {
+  start: 'jobcan_start_time',
+  end: 'jobcan_end_time',
+  rest: 'jobcan_rest_time'
+} as const;
+
+const DEFAULT_VALUE = {
+  start: '09:00',
+  end: '18:00',
+  rest: '01:00'
+} as const;
+
 const formSchema = z.object({
   start: z.string(),
   end: z.string(),
@@ -21,11 +34,29 @@ function App() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      start: '09:00',
-      end: '18:00',
-      rest: '01:00'
+      start: DEFAULT_VALUE.start,
+      end: DEFAULT_VALUE.end,
+      rest: DEFAULT_VALUE.rest
     }
   });
+
+  useLayoutEffect(() => {
+    const fetchData = async () => {
+      const savedValues = await chrome.storage.sync.get([
+        STORAGE_KEY.start,
+        STORAGE_KEY.end,
+        STORAGE_KEY.rest
+      ]);
+
+      form.reset({
+        start: savedValues[STORAGE_KEY.start] || DEFAULT_VALUE.start,
+        end: savedValues[STORAGE_KEY.end] || DEFAULT_VALUE.end,
+        rest: savedValues[STORAGE_KEY.rest] || DEFAULT_VALUE.rest
+      });
+    };
+
+    fetchData();
+  }, [form]);
 
   return (
     <Form {...form}>
@@ -78,6 +109,12 @@ function App() {
 export default App;
 
 const onSubmit = (values: z.infer<typeof formSchema>): void => {
+  chrome.storage.sync.set({
+    [STORAGE_KEY.start]: values.start,
+    [STORAGE_KEY.end]: values.end,
+    [STORAGE_KEY.rest]: values.rest
+  });
+
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     chrome.scripting.executeScript({
       target: { tabId: tabs[0].id ?? 0 },
