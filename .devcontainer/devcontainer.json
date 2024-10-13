@@ -6,12 +6,19 @@
     "vscode": {
       "extensions": [
         "eamodio.gitlens",
-        "bradlc.vscode-tailwindcss"
+        "bradlc.vscode-tailwindcss",
+        "biomejs.biome"
       ],
       "settings": {
         "editor.tabSize": 2,
         "files.associations": {
           "*.css": "tailwindcss"
+        },
+        "editor.defaultFormatter": "biomejs.biome",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "quickfix.biome": "explicit",
+          "source.organizeImports.biome": "explicit"
         }
       }
     }
