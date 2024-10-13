@@ -33,11 +33,7 @@ const formSchema = z.object({
 function App() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      start: DEFAULT_VALUE.start,
-      end: DEFAULT_VALUE.end,
-      rest: DEFAULT_VALUE.rest
-    }
+    defaultValues: DEFAULT_VALUE
   });
 
   useLayoutEffect(() => {
@@ -61,44 +57,27 @@ function App() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="p-4 space-y-4">
-        <FormField
-          control={form.control}
-          name="start"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>開始時刻</FormLabel>
-              <FormControl>
-                <Input type="time" {...field} />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="end"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>終了時刻</FormLabel>
-              <FormControl>
-                <Input type="time" {...field} />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="rest"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>休憩</FormLabel>
-              <FormControl>
-                <Input type="time" {...field} />
-              </FormControl>
-            </FormItem>
-          )}
-        />
+        {(['start', 'end', 'rest'] as const).map((fieldName) => (
+          <FormField
+            key={fieldName}
+            control={form.control}
+            name={fieldName}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  {fieldName === 'start'
+                    ? '開始時刻'
+                    : fieldName === 'end'
+                      ? '終了時刻'
+                      : '休憩'}
+                </FormLabel>
+                <FormControl>
+                  <Input type="time" {...field} />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        ))}
 
         <Button type="submit">入力</Button>
       </form>
@@ -127,14 +106,16 @@ const onSubmit = (values: z.infer<typeof formSchema>): void => {
 const inputAttendance = (start: string, end: string, rest: string): void => {
   try {
     // 参照エラー回避のため、関数内で定義
-    const getElementByXPath = (xpath: string): Node | null => {
-      return document.evaluate(
+    const getElementByXPath = (xpath: string): HTMLElement | null => {
+      const element = document.evaluate(
         xpath,
         document,
         null,
         XPathResult.FIRST_ORDERED_NODE_TYPE,
         null
       ).singleNodeValue;
+
+      return element instanceof HTMLElement ? element : null;
     };
 
     const getIsShiftDay = (index: number): boolean => {
@@ -142,7 +123,7 @@ const inputAttendance = (start: string, end: string, rest: string): void => {
         `/html/body/div/div/div[2]/main/div/div/div/div[2]/form/div[2]/div/table/tbody/tr[${index}]/td[4]/div[2]`
       );
 
-      if (!shiftText || !(shiftText instanceof HTMLDivElement)) {
+      if (!shiftText) {
         console.warn('シフト情報の取得に失敗しました');
         return false;
       }
@@ -175,9 +156,17 @@ const inputAttendance = (start: string, end: string, rest: string): void => {
       const index = (day - 1) * 3;
 
       const isShiftDay = getIsShiftDay(day);
-      const startInput = inputs[index];
-      const endInput = inputs[index + 1];
-      const restInput = inputs[index + 2];
+      const [startInput, endInput, restInput] = inputs.slice(index, index + 3);
+
+      if (startInput instanceof HTMLInputElement) {
+        startInput.value = isShiftDay ? start : '';
+      }
+      if (endInput instanceof HTMLInputElement) {
+        endInput.value = isShiftDay ? end : '';
+      }
+      if (restInput instanceof HTMLInputElement) {
+        restInput.value = isShiftDay ? rest : '';
+      }
 
       if (startInput && startInput instanceof HTMLInputElement) {
         startInput.value = isShiftDay ? start : '';
@@ -192,11 +181,7 @@ const inputAttendance = (start: string, end: string, rest: string): void => {
 
     window.alert('入力が完了しました');
   } catch (error) {
-    if (error instanceof Error) {
-      console.error(error.stack);
-    } else {
-      console.error('不明なエラー');
-    }
+    console.error(error instanceof Error ? error.stack : '不明なエラー');
     window.alert('問題が起きたため、処理を中断しました');
   }
 };
