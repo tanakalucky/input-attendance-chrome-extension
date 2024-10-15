@@ -4,10 +4,10 @@
   "version": "1.0.0",
   "description": "Jobcanの勤怠を一括入力する拡張機能",
   "icons": {
-    "16": "public/icon16.png",
-    "32": "public/icon32.png",
-    "48": "public/icon48.png",
-    "128": "public/icon128.png"
+    "16": "dist/icon16.png",
+    "32": "dist/icon32.png",
+    "48": "dist/icon48.png",
+    "128": "dist/icon128.png"
   },
   "permissions": ["activeTab", "storage", "scripting"],
   "action": {
