@@ -154,28 +154,26 @@ const inputAttendance = (start: string, end: string, rest: string): void => {
 
     for (let day = 1; day <= days; day++) {
       const index = (day - 1) * 3;
-
       const isShiftDay = getIsShiftDay(day);
       const [startInput, endInput, restInput] = inputs.slice(index, index + 3);
 
       if (startInput instanceof HTMLInputElement) {
         startInput.value = isShiftDay ? start : '';
+        // イベントの発火
+        startInput.dispatchEvent(new Event('input', { bubbles: true }));
+        startInput.dispatchEvent(new Event('change', { bubbles: true }));
       }
       if (endInput instanceof HTMLInputElement) {
         endInput.value = isShiftDay ? end : '';
+        // イベントの発火
+        endInput.dispatchEvent(new Event('input', { bubbles: true }));
+        endInput.dispatchEvent(new Event('change', { bubbles: true }));
       }
       if (restInput instanceof HTMLInputElement) {
         restInput.value = isShiftDay ? rest : '';
-      }
-
-      if (startInput && startInput instanceof HTMLInputElement) {
-        startInput.value = isShiftDay ? start : '';
-      }
-      if (endInput && endInput instanceof HTMLInputElement) {
-        endInput.value = isShiftDay ? end : '';
-      }
-      if (restInput && restInput instanceof HTMLInputElement) {
-        restInput.value = isShiftDay ? rest : '';
+        // イベントの発火
+        restInput.dispatchEvent(new Event('input', { bubbles: true }));
+        restInput.dispatchEvent(new Event('change', { bubbles: true }));
       }
     }
 
